@@ -12,6 +12,14 @@ The application infrastructure is defined in CDK. This makes it simple to manage
 
 The Lambda code is written in Python. It first refreshes its credentials with the Spotify API and retrieves a new access token. Access tokens last only one hour whereas refresh tokens (which is stored in Secrets Manager) lasts until a user de-authorizes the application from their account. After retrieving a new access token, it makes a request to the Spotify "Currently Playing" API endpoint and simplifies the response data before passing it back to API Gateway.
 
+## API Gateway
+
+API Gateway is used to route HTTP requests to the Lambda code. It should have caching enabled with a timeout of 60 seconds but I haven't gotten there yet.
+
+### TODO: Enable caching
+
+I would advise against using deploying this service yourself until caching is added to API Gateway otherwise you could be ratelimited very quickly by Spotify.
+
 # Why?
 
 I wanted to be able to embed a widget on my personal webpage (as well as theoretically anywhere where I can embed an IFrame) to display what I'm currently listening to on Spotify without having to publicize my Spotify API key.
