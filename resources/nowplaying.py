@@ -52,11 +52,28 @@ def handler(event, context):
 
   r = http.request('GET', API_URL, headers=headers)
 
-  print(r.data)
-  resJson = json.loads(r.data)
-  print(resJson)
-
-  return {
-        "statusCode": 200,
-        "body": r.data,
+  if r.status == 200:
+    resJson = json.loads(r.data)
+    print(resJson)
+    progress = resJson["progress_ms"]
+    duration = resJson["item"]["duration_ms"]
+    album_name = resJson["item"]["album"]["name"]
+    artists_raw = resJson["item"]["artists"]
+    artists = []
+    for artist_raw in artists_raw:
+      artists.append(artist_raw["name"])
+    name = resJson["item"]["name"]
+    return {
+          "statusCode": 200,
+          "body": json.dumps({
+            "progress": progress,
+            "duration": duration,
+            "album_name": album_name,
+            "artists": artists,
+            "song_name": name
+          }),
+      }
+  else:
+    return {
+      "statusCode": r.status
     }
