@@ -27,8 +27,8 @@ jobs:
       - name: Output ref name
         run: echo ${{ github.ref }}
       - name: Deploy dev stack
-        if: ${{ github.ref == 'refs/head/development' }}
+        if: ${{ github.ref == 'refs/heads/development' }}
         run: npx cdk deploy SpotifyServiceStack-dev
       - name: Deploy prod stack
-        if: ${{ github.ref == 'refs/head/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: npx cdk deploy SpotifyServiceStack-prod
