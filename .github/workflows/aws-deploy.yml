@@ -24,6 +24,8 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: 'us-west-2'
+      - name: Output ref name
+        run: echo ${{ github.ref }}
       - name: Deploy dev stack
         if: ${{ github.ref == 'refs/head/development' }}
         run: npx cdk deploy SpotifyServiceStack-dev
