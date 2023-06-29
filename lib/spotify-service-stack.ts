@@ -1,6 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
-import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { EndpointType, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ApiGateway } from 'aws-cdk-lib/aws-route53-targets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
@@ -11,6 +14,7 @@ export class SpotifyServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
     const stage = props?.description;
+    const isTest = stage !== 'prod';
 
     const refresh_secret = Secret.fromSecretCompleteArn(this, "SpotifyRefreshToken", REFRESH_TOKEN_ARN);
     const client_secret = Secret.fromSecretCompleteArn(this, "SpotifyClientSecret", CLIENT_SECRET_ARN);
@@ -40,10 +44,28 @@ export class SpotifyServiceStack extends cdk.Stack {
         cacheTtl: cdk.Duration.seconds(10),
         throttlingBurstLimit: 10,
         throttlingRateLimit: 10,
-      }
+      },
+      // domainName: {
+      //   domainName: (isTest ? 'devapi' : 'api') + '.brennanmcmicking.net',
+      //   certificate: Certificate.fromCertificateArn(this, `Cert-${stage}`,
+      //     'arn:aws:acm:us-east-1:446708209687:certificate/5604dec6-3562-4132-b3f0-43129bbbf466'),
+      //   basePath: 'v1',
+      //   endpointType: EndpointType.EDGE,
+      // }
     });
 
     const now_playing = api.root.addResource("now-playing");
     now_playing.addMethod('GET');
+
+    // const hostedZone = HostedZone.fromHostedZoneAttributes(this, `HostedZone-${stage}`, {
+    //   hostedZoneId: 'Z045204614CI9B8AAMLRQ',
+    //   zoneName: 'brennanmcmicking.net',
+    // });
+
+    // new ARecord(this, `ARecord-${stage}`, {
+    //   zone: hostedZone,
+    //   recordName: 'api',
+    //   target: RecordTarget.fromAlias(new ApiGateway(api)),
+    // });
   }
 }
