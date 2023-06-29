@@ -65,6 +65,10 @@ def handler(event, context):
     name = resJson["item"]["name"]
     return {
           "statusCode": 200,
+          "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
           "body": json.dumps({
             "progress": progress,
             "duration": duration,
