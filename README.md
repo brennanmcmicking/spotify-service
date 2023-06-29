@@ -1,6 +1,6 @@
 # Now Listening Service
 
-This repo contains the CDK and function code to deploy a REST API hosted in AWS using API Gateway and Lambda. It returns what the user represented by the secrets stored in secrets manager is listening to in real-time.
+This repo contains the CDK and function code to deploy a REST API hosted in AWS using API Gateway and Lambda. It returns what the user represented by the secrets stored in secrets manager is listening to in (near) real-time.
 
 # Components
 
@@ -14,11 +14,7 @@ The Lambda code is written in Python. It first refreshes its credentials with th
 
 ## API Gateway
 
-API Gateway is used to route HTTP requests to the Lambda code. It should have caching enabled with a timeout of 60 seconds but I haven't gotten there yet.
-
-### TODO: Enable caching
-
-I would advise against using deploying this service yourself until caching is added to API Gateway otherwise you could be ratelimited very quickly by Spotify.
+API Gateway is used to route HTTP requests to the Lambda code. It has a cache of 10 seconds enabed. This should be just enough time to prevent people from spamming the API but also short enough to accurately depict what I'm listening to.
 
 # Why?
 
@@ -56,5 +52,6 @@ If you want to deploy this application yourself, it's actually pretty simple. Th
 10. In Secrets Manager, put your Spotify client_id and client_secret as raw data in the following format: "client_id:client_secret" (example: "12345:67890")
 11. Also create another secret for your refresh token. Getting your refresh token is really annoying but once you do it you never have to do it again. The steps to do it are available online, too much to write out here.
 12. Once your secrets are in, copy their ARNs and put them in their respective locations in spotify-service-stack.ts
-13. You should be ready to go! Type `cdk deploy --all` to deploy all stacks
-14. Test your API (you can get the URL by going to API Gateway in the AWS console)
+13. Set up a domain name, hosted zone, and certificate (cert must be in us-east-1) OR comment out the domain name mapping stuff in `spotify-service-stack.ts`
+14. You should be ready to go! Type `cdk deploy --all` to deploy all stacks
+15. Test your API (you can get the URL by going to API Gateway in the AWS console)
