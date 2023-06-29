@@ -57,6 +57,11 @@ export class SpotifyServiceStack extends cdk.Stack {
       apiKeyRequired: isTest,
     });
 
+    const now_playing_badge = now_playing.addResource("badge");
+    now_playing_badge.addMethod('GET', new LambdaIntegration(handler), {
+      apiKeyRequired: isTest
+    });
+
     if (isTest) {
       const key = api.addApiKey(`ApiKey-${stage}`);
       const plan = api.addUsagePlan(`ApiUsagePlan-${stage}`, {

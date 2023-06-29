@@ -29,7 +29,6 @@ def refreshAccessToken():
     },
     body=f"grant_type=refresh_token&refresh_token={REFRESH_TOKEN}"
   )
-  print(res.data)
   return json.loads(res.data)["access_token"]
 
 
@@ -39,6 +38,7 @@ print("Got first access token")
 
 
 def handler(event, context):
+  print(event)
   global access_token
   global access_token_last_update
   if access_token is None or datetime.datetime.now() - access_token_last_update > datetime.timedelta(minutes=59):
@@ -53,8 +53,7 @@ def handler(event, context):
   r = http.request('GET', API_URL, headers=headers)
 
   if r.status == 200:
-    resJson = json.loads(r.data)
-    print(resJson)
+    resJson = json.loads(r.data) 
     progress = resJson["progress_ms"]
     duration = resJson["item"]["duration_ms"]
     album_name = resJson["item"]["album"]["name"]
@@ -63,19 +62,32 @@ def handler(event, context):
     for artist_raw in artists_raw:
       artists.append(artist_raw["name"])
     name = resJson["item"]["name"]
+    
+    response = None
+    if event["path"] == "/now-playing/badge":
+      response = {
+        "schemaVersion": 1,
+        "label": "Now listening to",
+        "message": f"{', '.join(artists)} - {name}",
+        "color": "blue",
+      }
+
+    if not response:
+      response = {
+        "progress": progress,
+        "duration": duration,
+        "album_name": album_name,
+        "artsits": artists,
+        "song_name": name,
+      }
+
     return {
           "statusCode": 200,
           "headers": {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
           },
-          "body": json.dumps({
-            "progress": progress,
-            "duration": duration,
-            "album_name": album_name,
-            "artists": artists,
-            "song_name": name
-          }),
+          "body": json.dumps(response),
       }
   else:
     return {
