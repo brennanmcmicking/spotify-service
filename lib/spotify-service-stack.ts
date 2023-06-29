@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { EndpointType, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { EndpointType, LambdaIntegration, Method, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
@@ -32,9 +32,7 @@ export class SpotifyServiceStack extends cdk.Stack {
     refresh_secret.grantRead(handler);
     client_secret.grantRead(handler);
 
-    const api = new LambdaRestApi(this, `NowPlayingApi-${stage}`, {
-      handler,
-      proxy: false,
+    const api = new RestApi(this, `NowPlayingApi-${stage}`, {
       deployOptions: {
         cachingEnabled: true,
         cacheClusterEnabled: true,
@@ -55,8 +53,21 @@ export class SpotifyServiceStack extends cdk.Stack {
     });
 
     const now_playing = api.root.addResource("now-playing");
-    now_playing.addMethod('GET');
+    now_playing.addMethod('GET', new LambdaIntegration(handler), {
+      apiKeyRequired: isTest,
+    });
 
+    if (isTest) {
+      const key = api.addApiKey(`ApiKey-${stage}`);
+      const plan = api.addUsagePlan(`ApiUsagePlan-${stage}`, {
+        name: 'Dev',
+      });
+      plan.addApiKey(key);
+      plan.addApiStage({
+        api,
+        stage: api.deploymentStage,
+      });
+    }
     // const hostedZone = HostedZone.fromHostedZoneAttributes(this, `HostedZone-${stage}`, {
     //   hostedZoneId: 'Z045204614CI9B8AAMLRQ',
     //   zoneName: 'brennanmcmicking.net',
