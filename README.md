@@ -1,5 +1,7 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Ff214m5bgqk.execute-api.us-west-2.amazonaws.com%2Fprod%2Fnow-playing%2Fbadge)
 
+(this badge will only update as often as this repo's README cache is invalidated)
+
 # Now Listening Service
 
 This repo contains the CDK and function code to deploy a REST API hosted in AWS using API Gateway and Lambda. It returns what the user represented by the secrets stored in secrets manager is listening to in (near) real-time.

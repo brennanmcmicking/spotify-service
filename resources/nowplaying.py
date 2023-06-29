@@ -16,9 +16,23 @@ secrets_client = botocore.session.get_session().create_client('secretsmanager')
 ACCOUNTS_URL = "https://accounts.spotify.com/api/token"
 API_URL = "https://api.spotify.com/v1/me/player/currently-playing"
 
+RES_HEADERS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+}
+
 REFRESH_TOKEN = secrets_client.get_secret_value(SecretId=os.environ['REFRESH_TOKEN_ARN'])["SecretString"]
 CLIENT_SECRET = base64.b64encode(secrets_client.get_secret_value(SecretId=os.environ['CLIENT_SECRET_ARN'])["SecretString"].encode('ascii')).decode('ascii')
 print("Refreshed secrets")
+
+
+def create_badge_response(message: str) -> dict:
+  return {
+    "schemaVersion": 1,
+    "label": "Now listening to",
+    "message": message,
+    "color": "blue",
+  }
 
 
 def refreshAccessToken():
@@ -65,12 +79,7 @@ def handler(event, context):
     
     response = None
     if event["path"] == "/now-playing/badge":
-      response = {
-        "schemaVersion": 1,
-        "label": "Now listening to",
-        "message": f"{', '.join(artists)} - {name}",
-        "color": "blue",
-      }
+        response = create_badge_response(f"{', '.join(artists)} - {name}")
 
     if not response:
       response = {
@@ -83,13 +92,17 @@ def handler(event, context):
 
     return {
           "statusCode": 200,
-          "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
+          "headers": RES_HEADERS,
           "body": json.dumps(response),
       }
+  elif r.status == 204 and event["path"] == "/now-playing/badge":
+    return {
+      "statusCode": 200,
+      "headers": RES_HEADERS, 
+      "body": json.dumps(create_badge_response("Nothing"))
+    }
   else:
     return {
-      "statusCode": r.status
+      "statusCode": r.status,
+      "headers": RES_HEADERS,
     }
