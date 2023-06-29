@@ -21,7 +21,7 @@ jobs:
           aws-region: 'us-west-2'
       - name: Deploy dev stack
         if: github.ref == 'refs/heads/development'
-        run: npx cdk deploy SpotifyServiceStack-dev
+        run: npx cdk deploy SpotifyServiceStack-dev --require approval never
       - name: Deploy prod stack
         if: github.ref == 'refs/heads/main'
-        run: npx cdk deploy SpotifyServiceStack-prod
+        run: npx cdk deploy SpotifyServiceStack-prod --require-approval never
