@@ -31,6 +31,16 @@ export class SpotifyServiceStack extends cdk.Stack {
     const api = new LambdaRestApi(this, `NowPlayingApi-${stage}`, {
       handler,
       proxy: false,
+      deployOptions: {
+        cachingEnabled: true,
+        cacheClusterEnabled: true,
+        cacheDataEncrypted: true,
+        stageName: "prod",
+        dataTraceEnabled: true,
+        cacheTtl: cdk.Duration.seconds(10),
+        throttlingBurstLimit: 10,
+        throttlingRateLimit: 10,
+      }
     });
 
     const now_playing = api.root.addResource("now-playing");
