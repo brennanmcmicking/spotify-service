@@ -34,22 +34,18 @@ export class SpotifyServiceStack extends cdk.Stack {
 
     const api = new RestApi(this, `NowPlayingApi-${stage}`, {
       deployOptions: {
-        cachingEnabled: true,
-        cacheClusterEnabled: true,
-        cacheDataEncrypted: true,
+        cachingEnabled: false,
         stageName: "prod",
-        dataTraceEnabled: true,
-        cacheTtl: cdk.Duration.seconds(10),
         throttlingBurstLimit: 10,
         throttlingRateLimit: 10,
       },
-      // domainName: {
-      //   domainName: (isTest ? 'devapi' : 'api') + '.brennanmcmicking.net',
-      //   certificate: Certificate.fromCertificateArn(this, `Cert-${stage}`,
-      //     'arn:aws:acm:us-east-1:446708209687:certificate/5604dec6-3562-4132-b3f0-43129bbbf466'),
-      //   basePath: 'v1',
-      //   endpointType: EndpointType.EDGE,
-      // }
+      domainName: {
+        domainName: (isTest ? 'devapi' : 'api') + '.brennanmcmicking.net',
+        certificate: Certificate.fromCertificateArn(this, `Cert-${stage}`,
+          'arn:aws:acm:us-east-1:446708209687:certificate/954abdfb-b567-498e-af2b-02669ff4507a'),
+        basePath: 'v1',
+        endpointType: EndpointType.EDGE,
+      }
     });
 
     const now_playing = api.root.addResource("now-playing");
@@ -59,7 +55,7 @@ export class SpotifyServiceStack extends cdk.Stack {
 
     const now_playing_badge = now_playing.addResource("badge");
     now_playing_badge.addMethod('GET', new LambdaIntegration(handler), {
-      apiKeyRequired: isTest
+      apiKeyRequired: isTest,
     });
 
     if (isTest) {
@@ -73,15 +69,15 @@ export class SpotifyServiceStack extends cdk.Stack {
         stage: api.deploymentStage,
       });
     }
-    // const hostedZone = HostedZone.fromHostedZoneAttributes(this, `HostedZone-${stage}`, {
-    //   hostedZoneId: 'Z045204614CI9B8AAMLRQ',
-    //   zoneName: 'brennanmcmicking.net',
-    // });
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, `HostedZone-${stage}`, {
+      hostedZoneId: 'Z045204614CI9B8AAMLRQ',
+      zoneName: 'brennanmcmicking.net',
+    });
 
-    // new ARecord(this, `ARecord-${stage}`, {
-    //   zone: hostedZone,
-    //   recordName: 'api',
-    //   target: RecordTarget.fromAlias(new ApiGateway(api)),
-    // });
+    new ARecord(this, `ARecord-${stage}`, {
+      zone: hostedZone,
+      recordName: (isTest ? 'devapi' : 'api') + '.brennanmcmicking.net',
+      target: RecordTarget.fromAlias(new ApiGateway(api)),
+    });
   }
 }
